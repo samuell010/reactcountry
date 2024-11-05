@@ -13,6 +13,7 @@ import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
 import { getAuth } from "firebase/auth";
 import { getDatabase, ref, get, set } from "firebase/database"; 
+import { addFavourite } from "../auth/firebase";
 
 const Countries = () => {
   const dispatch = useDispatch();
@@ -59,12 +60,14 @@ const Countries = () => {
     };
     setLocalFavourites(updatedFavourites);
 
-    const db = getDatabase();
-    const favRef = ref(db, `favourites/${user.uid}`);
-    set(favRef, updatedFavourites);
+    // const db = getDatabase();
+    // const favRef = ref(db, `favourites/${user.uid}`);
+    // set(favRef, updatedFavourites);
 
-    dispatch(addFavouriteThunk(country));
+    // dispatch(addFavouriteThunk(country));
+  addFavourite(user.uid,country.name.common)
   };
+
 
   if (loading) {
     return (

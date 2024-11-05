@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, collection, addDoc } from "firebase/firestore";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -22,12 +22,12 @@ const registerWithEmailAndPassword = async (name, email, password) => {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, password);
     const user = res.user;
-    await setDoc(doc(db, "users", user.uid), {
+    await addDoc(collection(db, "users" ), {
       uid: user.uid,
       name: name,
       authProvider: "local",
       email,
-      favourites: []
+    
     });
   } catch (error) {
     console.error(error);
@@ -48,14 +48,20 @@ const logout = () => {
   auth.signOut();
 };
 
-const addFavourite = async (country) => {
+const addFavourite = async (uid,name) => {
   const user = auth.currentUser;
   if (!user) throw new Error("User not authenticated");
 
-  const userRef = doc(db, "users", user.uid);
+  /*const userRef = doc(db, "users", user.uid);
   await updateDoc(userRef, {
     favourites: arrayUnion(country)
-  });
+  });*/
+  try {
+    await addDoc(collection(db, `users/${uid}/favourites`),{name})
+    console.log('favourite added to firebasse')
+  } catch(error){
+    console.log('error favourite to firebase', error)
+  }
 };
 
 const getFavourites = async () => {

@@ -9,27 +9,26 @@ import Row from "react-bootstrap/Row";
 import axios from "axios";
 import { getAuth } from "firebase/auth";
 import { getDatabase, ref, get } from "firebase/database";
+import { FavoriteIcon } from '@mui/icons-material/Favorite';
+import { query } from "firebase/firestore";
+import { initializeCountries } from "../store/countriesSlice";
 
 const Favourites = () => {
   const dispatch = useDispatch();
-  const [favourites, setFavourites] = useState([]);
+  const favourites = useSelector((state)=>state.favourites.favourites);
   const [countriesData, setCountriesData] = useState([]);
   const auth = getAuth();
   const user = auth.currentUser;
+  console.log('favourite',favourites)
 
   useEffect(() => {
-    if (user) {
-      const db = getDatabase();
-      const favRef = ref(db, `favourites/${user.uid}`);
-      get(favRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const favs = snapshot.val();
-          const favCountries = Object.keys(favs).filter(key => favs[key]);
-          setFavourites(favCountries);
-        }
-      });
-    }
-  }, [user]);
+    
+     
+    dispatch(initializeCountries())  
+    dispatch(initializeFavourites()) 
+    
+  
+  },[dispatch]);
 
   useEffect(() => {
     const fetchCountriesData = async () => {

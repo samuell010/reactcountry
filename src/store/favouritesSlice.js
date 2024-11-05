@@ -1,12 +1,14 @@
-// favouritesSlice.js
-
 import { createSlice } from "@reduxjs/toolkit";
 import { getDatabase, ref, get, set } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import { isLoading } from "./countriesSlice";
+import { collection, getDocs, query } from "firebase/firestore";
+import { db } from "../auth/firebase";
 
 // Initial state for the favourites slice
 const initialState = {
   favourites: [],
+  isLoading:true,
 };
 
 // Create the favourites slice
@@ -15,8 +17,13 @@ const favouritesSlice = createSlice({
   initialState,
   reducers: {
     setFavourites: (state, action) => {
+
       state.favourites = action.payload;
     },
+    isLoading:(state, action) => {
+      state.isLoading = action.payload
+    }
+
   },
 });
 
@@ -29,15 +36,14 @@ export const initializeFavourites = () => async (dispatch) => {
   const user = auth.currentUser;
 
   if (user) {
-    const db = getDatabase();
-    const favRef = ref(db, `favourites/${user.uid}`);
-    const snapshot = await get(favRef);
-    if (snapshot.exists()) {
-      const favs = snapshot.val();
-      const favCountries = Object.keys(favs).filter(key => favs[key]);
-      dispatch(setFavourites(favCountries));
-    }
-  }
+    const q = query(collection(db,`users/${user.uid}/favourites`))
+    const querySnapShot = await getDocs(q) 
+    
+  const firebaseFavourites = querySnapShot.docs.map((doc)=>doc.data().name)
+  console.log('firebase favourite',firebaseFavourites)
+  dispatch(setFavourites(firebaseFavourites))
+  dispatch(isLoading(false))
+}
 };
 
 // Thunk to add a favourite country
