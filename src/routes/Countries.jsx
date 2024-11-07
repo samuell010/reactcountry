@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { initializeCountries } from "../store/countriesSlice";
-import { initializeFavourites, addFavouriteThunk } from "../store/favouritesSlice";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import { getAuth } from "firebase/auth";
+import { get, getDatabase, ref } from "firebase/database";
+import React, { useEffect, useState } from "react";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
-import ListGroup from "react-bootstrap/ListGroup";
-import { Link } from "react-router-dom";
-import Spinner from "react-bootstrap/Spinner";
 import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
-import { getAuth } from "firebase/auth";
-import { getDatabase, ref, get, set } from "firebase/database"; 
+import ListGroup from "react-bootstrap/ListGroup";
+import Row from "react-bootstrap/Row";
+import Spinner from "react-bootstrap/Spinner";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { addFavourite } from "../auth/firebase";
+import { initializeCountries } from "../store/countriesSlice";
+import { initializeFavourites } from "../store/favouritesSlice";
 
 const Countries = () => {
   const dispatch = useDispatch();
@@ -65,9 +65,8 @@ const Countries = () => {
     // set(favRef, updatedFavourites);
 
     // dispatch(addFavouriteThunk(country));
-  addFavourite(user.uid,country.name.common)
+    addFavourite(user.uid, country.name.common);
   };
-
 
   if (loading) {
     return (
@@ -100,7 +99,7 @@ const Countries = () => {
             country.name.common.toLowerCase().includes(search.toLowerCase())
           )
           .map((country) => {
-            const isFavourite = !!localFavourites[country.name.common];
+            const isFavourite = favourites.includes(country.name.common); // Modified this line to correctly check if the country is in the favourites array.
 
             return (
               <Col key={country.name.common}>
