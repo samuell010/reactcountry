@@ -36,7 +36,7 @@ const favouritesSlice = createSlice({
     removeFavourite: (state, action) => {
       const user = auth.currentUser;
       if (user) removeFavouriteFromFirebase(user.uid, action.payload);
-      state.favourite = state.favourites.filter(
+      state.favourites = state.favourites.filter(
         (favourite) => favourite !== action.payload
       );
     },
