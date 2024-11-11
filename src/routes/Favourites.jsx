@@ -1,34 +1,39 @@
+import axios from "axios";
+import { getAuth } from "firebase/auth";
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { initializeFavourites } from "../store/favouritesSlice"; // Import the initializeFavourites action
+import { Button } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
-import axios from "axios";
-import { getAuth } from "firebase/auth";
-import { getDatabase, ref, get } from "firebase/database";
-import { FavoriteIcon } from '@mui/icons-material/Favorite';
-import { query } from "firebase/firestore";
+import { useDispatch, useSelector } from "react-redux";
 import { initializeCountries } from "../store/countriesSlice";
+import {
+  clearFavourites,
+  initializeFavourites,
+} from "../store/favouritesSlice"; // Import the initializeFavourites action
 
 const Favourites = () => {
   const dispatch = useDispatch();
-  const favourites = useSelector((state)=>state.favourites.favourites);
+  const favourites = useSelector((state) => state.favourites.favourites);
+
+  // I added these two states to handle the loading of the countries and favourites
+  const countriesLoading = useSelector((state) => state.countries.loading);
+  const favouritesLoading = useSelector((state) => state.favourites.loading);
   const [countriesData, setCountriesData] = useState([]);
   const auth = getAuth();
   const user = auth.currentUser;
-  console.log('favourite',favourites)
+  console.log("favourite", favourites);
 
   useEffect(() => {
-    
-     
-    dispatch(initializeCountries())  
-    dispatch(initializeFavourites()) 
-    
-  
-  },[dispatch]);
+    // Load both countries and favourites on component mount
+    const loadData = async () => {
+      await dispatch(initializeCountries()); // Make sure countries are loaded first
+      await dispatch(initializeFavourites());
+    };
+    loadData();
+  }, [dispatch]);
 
   useEffect(() => {
     const fetchCountriesData = async () => {
@@ -40,11 +45,29 @@ const Favourites = () => {
   }, []);
 
   const getCountryData = (countryName) => {
-    return countriesData.find(country => country.name.common === countryName);
+    return countriesData.find((country) => country.name.common === countryName);
   };
+  // This part will show the loading spinner while the countries and favourites are loading and update when they are loaded
+  if (countriesLoading || favouritesLoading) {
+    return (
+      <Col className="text-center m-5">
+        <Spinner
+          animation="border"
+          role="status"
+          className="center"
+          variant="info"
+        >
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Col>
+    );
+  }
 
   return (
     <Container fluid>
+      <Button onClick={() => dispatch(clearFavourites())}>
+        Clear Favourites
+      </Button>
       <Row xs={2} md={3} lg={4} className="g-3">
         {favourites.map((countryName) => {
           const country = getCountryData(countryName);

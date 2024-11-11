@@ -1,73 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { initializeCountries } from "../store/countriesSlice";
-import { initializeFavourites, addFavouriteThunk } from "../store/favouritesSlice";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import { getAuth } from "firebase/auth";
+import React, { useEffect, useState } from "react";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
-import ListGroup from "react-bootstrap/ListGroup";
-import { Link } from "react-router-dom";
-import Spinner from "react-bootstrap/Spinner";
 import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
-import { getAuth } from "firebase/auth";
-import { getDatabase, ref, get, set } from "firebase/database"; 
-import { addFavourite } from "../auth/firebase";
+import ListGroup from "react-bootstrap/ListGroup";
+import Row from "react-bootstrap/Row";
+import Spinner from "react-bootstrap/Spinner";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { initializeCountries } from "../store/countriesSlice";
+import {
+  addFavourite,
+  initializeFavourites,
+  removeFavourite,
+} from "../store/favouritesSlice";
 
 const Countries = () => {
   const dispatch = useDispatch();
-  const countriesList = useSelector((state) => state.countries.countries || []);
+  const countriesList = useSelector((state) => state.countries.countries);
   const loading = useSelector((state) => state.countries.isLoading);
-  const favourites = useSelector((state) => state.favourites.favourites || []);
+  const favourites = useSelector((state) => state.favourites.favourites);
   const [search, setSearch] = useState("");
-  const [localFavourites, setLocalFavourites] = useState({});
+
+  console.log("Favourites from store", favourites);
 
   const auth = getAuth();
   const user = auth.currentUser;
 
   useEffect(() => {
     dispatch(initializeCountries());
-  }, [dispatch]);
-
-  useEffect(() => {
     if (user) {
       dispatch(initializeFavourites());
     }
-  }, [dispatch, user]);
-
-  useEffect(() => {
-    if (user) {
-      const db = getDatabase();
-      const favRef = ref(db, `favourites/${user.uid}`);
-      get(favRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const favs = snapshot.val();
-          setLocalFavourites(favs || {});
-        }
-      });
-    }
-  }, [user]);
-
-  const handleAddFavourite = (country) => {
-    if (!user) {
-      alert("Please sign in to add favourites");
-      return;
-    }
-    const updatedFavourites = {
-      ...localFavourites,
-      [country.name.common]: !localFavourites[country.name.common],
-    };
-    setLocalFavourites(updatedFavourites);
-
-    // const db = getDatabase();
-    // const favRef = ref(db, `favourites/${user.uid}`);
-    // set(favRef, updatedFavourites);
-
-    // dispatch(addFavouriteThunk(country));
-  addFavourite(user.uid,country.name.common)
-  };
-
+  }, [dispatch]);
 
   if (loading) {
     return (
@@ -100,22 +67,40 @@ const Countries = () => {
             country.name.common.toLowerCase().includes(search.toLowerCase())
           )
           .map((country) => {
-            const isFavourite = !!localFavourites[country.name.common];
-
             return (
               <Col key={country.name.common}>
                 <Card className="h-100">
-                  <FavoriteIcon
-                    onClick={() => handleAddFavourite(country)}
-                    style={{
-                      cursor: "pointer",
-                      position: "absolute",
-                      right: "10px",
-                      top: "10px",
-                      zIndex: "1",
-                      color: isFavourite ? "red" : "black",
-                    }}
-                  />
+                  {favourites.some(
+                    (favourite) => favourite === country.name?.common
+                  ) ? (
+                    <FavoriteIcon
+                      onClick={() =>
+                        dispatch(removeFavourite(country.name.common))
+                      }
+                      style={{
+                        cursor: "pointer",
+                        position: "absolute",
+                        right: "10px",
+                        top: "10px",
+                        zIndex: "1",
+                        color: "red",
+                      }}
+                    />
+                  ) : (
+                    <FavoriteIcon
+                      onClick={() =>
+                        dispatch(addFavourite(country.name.common))
+                      }
+                      style={{
+                        cursor: "pointer",
+                        position: "absolute",
+                        right: "10px",
+                        top: "10px",
+                        zIndex: "1",
+                        color: "black",
+                      }}
+                    />
+                  )}
                   <Link
                     to={`/countries/${country.name.common}`}
                     state={{ country: country }}
