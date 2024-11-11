@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getAuth } from "firebase/auth";
 import React, { useEffect, useState } from "react";
+import { Button } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -8,7 +9,10 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import { useDispatch, useSelector } from "react-redux";
 import { initializeCountries } from "../store/countriesSlice";
-import { initializeFavourites } from "../store/favouritesSlice"; // Import the initializeFavourites action
+import {
+  clearFavourites,
+  initializeFavourites,
+} from "../store/favouritesSlice"; // Import the initializeFavourites action
 
 const Favourites = () => {
   const dispatch = useDispatch();
@@ -61,6 +65,9 @@ const Favourites = () => {
 
   return (
     <Container fluid>
+      <Button onClick={() => dispatch(clearFavourites())}>
+        Clear Favourites
+      </Button>
       <Row xs={2} md={3} lg={4} className="g-3">
         {favourites.map((countryName) => {
           const country = getCountryData(countryName);
