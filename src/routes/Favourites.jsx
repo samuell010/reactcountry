@@ -7,29 +7,29 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
+import Spinner from "react-bootstrap/Spinner";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import { useDispatch, useSelector } from "react-redux";
 import { initializeCountries } from "../store/countriesSlice";
 import {
   clearFavourites,
   initializeFavourites,
-} from "../store/favouritesSlice"; // Import the initializeFavourites action
+  removeFavourite,
+} from "../store/favouritesSlice"; // Import the removeFavourite action
 
 const Favourites = () => {
   const dispatch = useDispatch();
   const favourites = useSelector((state) => state.favourites.favourites);
-
-  // I added these two states to handle the loading of the countries and favourites
   const countriesLoading = useSelector((state) => state.countries.loading);
   const favouritesLoading = useSelector((state) => state.favourites.loading);
   const [countriesData, setCountriesData] = useState([]);
   const auth = getAuth();
   const user = auth.currentUser;
-  console.log("favourite", favourites);
 
   useEffect(() => {
     // Load both countries and favourites on component mount
     const loadData = async () => {
-      await dispatch(initializeCountries()); // Make sure countries are loaded first
+      await dispatch(initializeCountries());
       await dispatch(initializeFavourites());
     };
     loadData();
@@ -40,14 +40,13 @@ const Favourites = () => {
       const response = await axios.get("https://restcountries.com/v3.1/all");
       setCountriesData(response.data);
     };
-
     fetchCountriesData();
   }, []);
 
   const getCountryData = (countryName) => {
     return countriesData.find((country) => country.name.common === countryName);
   };
-  // This part will show the loading spinner while the countries and favourites are loading and update when they are loaded
+
   if (countriesLoading || favouritesLoading) {
     return (
       <Col className="text-center m-5">
@@ -65,9 +64,6 @@ const Favourites = () => {
 
   return (
     <Container fluid>
-      <Button onClick={() => dispatch(clearFavourites())}>
-        Clear Favourites
-      </Button>
       <Row xs={2} md={3} lg={4} className="g-3">
         {favourites.map((countryName) => {
           const country = getCountryData(countryName);
@@ -86,6 +82,20 @@ const Favourites = () => {
                     maxHeight: "200px",
                   }}
                 />
+                
+                {/* Favorite icon below the flag */}
+                <FavoriteIcon
+                  onClick={() => dispatch(removeFavourite(country.name.common))}
+                  style={{
+                    cursor: "pointer",
+                    color: favourites.includes(country.name.common)
+                      ? "red"
+                      : "black",
+                    marginTop: "10px",
+                    marginLeft: "90%", // Adjust to align right below the flag
+                  }}
+                />
+
                 <Card.Body className="d-flex flex-column">
                   <Card.Title>{country.name.common}</Card.Title>
                   <Card.Subtitle className="mb-5 text-muted">
