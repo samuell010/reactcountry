@@ -70,37 +70,6 @@ const Countries = () => {
             return (
               <Col key={country.name.common}>
                 <Card className="h-100">
-                  {favourites.some(
-                    (favourite) => favourite === country.name?.common
-                  ) ? (
-                    <FavoriteIcon
-                      onClick={() =>
-                        dispatch(removeFavourite(country.name.common))
-                      }
-                      style={{
-                        cursor: "pointer",
-                        position: "absolute",
-                        right: "10px",
-                        top: "10px",
-                        zIndex: "1",
-                        color: "red",
-                      }}
-                    />
-                  ) : (
-                    <FavoriteIcon
-                      onClick={() =>
-                        dispatch(addFavourite(country.name.common))
-                      }
-                      style={{
-                        cursor: "pointer",
-                        position: "absolute",
-                        right: "10px",
-                        top: "10px",
-                        zIndex: "1",
-                        color: "black",
-                      }}
-                    />
-                  )}
                   <Link
                     to={`/countries/${country.name.common}`}
                     state={{ country: country }}
@@ -116,6 +85,36 @@ const Countries = () => {
                       }}
                     />
                   </Link>
+
+                  {/* FavoriteIcon positioned below the flag */}
+                  {favourites.some(
+                    (favourite) => favourite === country.name?.common
+                  ) ? (
+                    <FavoriteIcon
+                      onClick={() =>
+                        dispatch(removeFavourite(country.name.common))
+                      }
+                      style={{
+                        cursor: "pointer",
+                        color: "red",
+                        marginTop: "10px",
+                        marginLeft: "90%", // Adjust margin as needed for placement
+                      }}
+                    />
+                  ) : (
+                    <FavoriteIcon
+                      onClick={() =>
+                        dispatch(addFavourite(country.name.common))
+                      }
+                      style={{
+                        cursor: "pointer",
+                        color: "black",
+                        marginTop: "10px",
+                        marginLeft: "90%", // Adjust margin as needed for placement
+                      }}
+                    />
+                  )}
+
                   <Card.Body className="d-flex flex-column">
                     <Card.Title>{country.name.common}</Card.Title>
                     <Card.Subtitle className="mb-2 text-muted">
